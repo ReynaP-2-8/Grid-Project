@@ -164,47 +164,27 @@ bool generateBoard(std::vector<std::vector<Square>> &board, std::list<Piece> pie
     return false;
 }
 
-std::vector<std::set<std::string>> getCombinations(std::vector<std::string> options, int num){
-    std::vector<std::set<std::string>> combinations;
-    for(int i=0; i<options.size(); ++i){
-        std::set<std::string> combination;
-        if(num>1){
-            for(int j=i+1; j<options.size(); ++j){
-                if(num>2){
-                    for(int k=j+1; k<options.size(); ++k){
-                        if(num>3){
-                            for(int l=k+1; l<options.size(); ++l){
-                                combination = {};
-                                combination.insert(options[l]);
-                                combination.insert(options[k]);
-                                combination.insert(options[j]);
-                                combination.insert(options[i]);
-                                combinations.push_back(combination);
-                            }
-                        }
-                        else{
-                            combination = {};
-                            combination.insert(options[k]);
-                            combination.insert(options[j]);
-                            combination.insert(options[i]);
-                            combinations.push_back(combination);
-                        }
-                    }
-                }
-                else{
-                    combination = {};
-                    combination.insert(options[j]);
-                    combination.insert(options[i]);
-                    combinations.push_back(combination);
-                }
-            }   
-        }
-        else{
-            combination.insert(options[i]);
-            combinations.push_back(combination);
+std::vector<std::set<std::string>> getCombinations(std::vector<std::string> options, int num, std::set<std::string> prepend = {}, std::vector<std::set<std::string>> output = {}){
+    if (num==0){
+        output.push_back({});
+        return output;
+    }
+    else if (num==1){
+        for(std::string option : options){
+            std::set<std::string> prependCopy = prepend;
+            prependCopy.insert(option);
+            output.push_back(prependCopy);
         }
     }
-    return combinations;
+    else{
+        for(int i=0; i<options.size(); ++i){
+            std::set<std::string> prependCopy = prepend;
+            prependCopy.insert(options[i]);
+            std::vector<std::string> newOptions (options.begin()+i+1, options.end());
+            output = getCombinations(newOptions, num-1, prependCopy, output);
+        }
+    }
+    return output;
 }
 
 int main(int argc, char* argv []){
@@ -271,6 +251,10 @@ int main(int argc, char* argv []){
 
         std::vector<std::set<std::string>> options = getCombinations(squares, totalSpaces-takenSpaces);
         for(std::set<std::string> option : options){
+            for(std::string optionS : option){
+                std::cout<<optionS;
+            }
+            std::cout<<std::endl;
             if(!generateBoard(board, pieces, output, option)){
                 for(std::string thing : option){
                     std::cout<<thing<<" ";
